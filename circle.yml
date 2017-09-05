@@ -1,0 +1,35 @@
+
+machine:
+  services:
+    - docker
+  environment:
+    BUILD_HOST: circle-build01.fhcrc.org
+
+dependencies:
+  override:
+    - pwd; ls -lh
+    - bash -c "curl -L https://github.com/docker/compose/releases/download/1.12.0/docker-compose-`uname -s`-`uname -m` > docker-compose"
+    - chmod +x docker-compose
+    - ./docker-compose up -d --force-recreate
+
+test:
+  override:
+    - sleep 10; sudo ./docker-compose ps
+    - curl --retry 10 --retry-delay 5 -v http://${BUILD_HOST}:8000
+    - docker exec -ti citest-${CIRCLE_BRANCH} bash -c "/root/testsuite.py pass"
+    - ./docker-compose stop
+    - ./docker-compose rm --force
+
+#deployment:
+#  master: 
+#    branch: master
+#    commands:
+#      - docker tag fredhutch/citest fredhutch/citest:production
+#      - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
+#      - docker push fredhutch/citest:production
+#  develop:
+#    branch: develop
+#    commands:
+#      - docker tag fredhutch/citest fredhutch/citest:develop
+#      - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
+#      - docker push fredhutch/citest:develop
