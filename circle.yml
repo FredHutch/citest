@@ -20,6 +20,12 @@ test:
     - ./docker-compose stop
     - ./docker-compose rm --force
 
+deployment:
+  master: 
+    branch: master
+    commands:
+      - pwd; ls -lh
+
 #deployment:
 #  master: 
 #    branch: master
